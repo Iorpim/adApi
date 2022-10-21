@@ -1,0 +1,88 @@
+// "schema"
+
+API {
+
+broadcaster_login(twitch_token):
+    if userid(twitch_token) in DB --> return JWT;
+    else --> initialize entry --> return JWT;
+
+user_auth(jwt, target):
+    if target in DB && (jwt.userid in DB(target).allowed_user || (mods_implied_allow && mod(jwt.userid)) --> return JWT;
+    else --> error;
+
+delete_broadcaster(jwt):
+    if jwt.write --> delete;
+    else --> error;
+
+[add|remove]_allowed_user(jwt, user):
+    if jwt.write --> [add|remove] user;
+    else --> error;
+
+get_allowed_users(jwt):
+    if jtw.write --> DB(jtw.user_id).allowed_users;
+    else --> error;
+
+edit_options(jwt, mods_only?, mods_implied_allow?)
+    if jwt.write --> update entry;
+    else --> error;
+
+get_options(jwt)
+    if jwt.read --> get entries;
+    else --> error;
+
+}
+
+Authorizer {
+
+[create|update]UpdateMessage(jwt):
+    if jwt.write --> allow;
+    else --> deny;
+
+[get|onUpdate]UpdateMessage(jwt):
+    if jtw.read --> allow;
+    else --> deny;
+
+}
+
+Extension {
+
+if !enabled --> return;
+
+isBroadcaster():
+    user = extractUser(url)
+    if broadcaster && user == broadcaster --> true;
+    else false;
+
+if isBroadcaster() --> broadcasterHandler();
+else --> continue;
+
+if getId(user) in tokenCache && tokenCache[getId(user)].enabled --> modHandler();
+
+}
+
+Options {
+
+Login():
+    Twitch login --> broadcaster_login(twitch_token);
+
+/*user_login(broadcaster_username):
+    Twitch login --> user_login(twitch_token, broadcaster_username);*/
+
+broadcasterOptions {
+    mods only = [true -- (false)];
+    auto allow mods = [true -- (false)];
+    allowed_users = [getAllowedUsers(jwt){removeUser($user) --> remove_allowed_user(jtw, $user)}];
+    |input| --> addUser($input) --> add_allowed_user(jwt, $input);
+}
+
+<hr>
+
+userOptions {
+    registered users = [(i in tokenCache){[(enabled) -- disabled]}];
+    |input| --> Twitch login --> user_login(twitch_token, $input);
+}
+
+<hr>
+    {userLogin()}
+
+}
