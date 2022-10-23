@@ -6,8 +6,8 @@ if(!fetch) {
 
 AWS.config.update({region: "us-east-2"});
 
-var secret = "zd0tq1ad8rzb48e2xcqica6j7zct89";
-var client_id = "8gej984rx3ypt104fl0gkncne8z6sn";
+var secret = "------------------------";
+var client_id = "-------------------------";
 var api_url = "https://api.twitch.tv/helix/";
 
 var ddb = new AWS.DynamoDB({apiVersion: "2012-08-10"});
@@ -33,8 +33,6 @@ async function broadcasterGet(broadcasterId) {
         });
     });
 }
-
-var url = "https://lbmncmnhpdmapppoicnokookjppcikpp.chromiumapp.org/?code=e3zxtjasp47d78mxl10ga7cqenb5yk&scope=&state=c3ab8aa609ea11e793ae92361f002671";
 
 function parse(q) {
     return new Proxy(new URLSearchParams(q), {
@@ -450,26 +448,11 @@ exports.handler = async (event, context) => {
         console.error(e);
         throw e;
     }
-    return response;//event["queryStringParameters"]["api-key"];//response;
+    return response;
 };
 
 
 async function main(event) {
-    //console.log("aaaa");
-    //var token = JSON.parse(`{"access_token":"0zp590ciql55jb8upwwalvb4ehheql","expires_in":14698,"refresh_token":"1jvjikabh96cl4vuaw9mvikghusjyebw43hic32pker647535e","scope":["moderation:read","user:read:email"],"token_type":"bearer"}`)
-    //var token = JSON.parse(`{"access_token":"2i0o50mvdjvnn716ekgvksjy8n557r","expires_in":13515,"refresh_token":"f8ya3zqzoykrvkocwkfw7e8t33dsr3nuq0zwgzbbhzz9atrwt6","token_type":"bearer"}`);
-    /*if(!token) {
-        var r = await _API._getToken(url);
-        console.log(r);
-        var token = JSON.parse(r);
-    }
-    var API = new _API(token);
-    var user = await getUser(API);
-    var userToken = createUserToken(user.data[0], "aaaaaaaaaa");
-    console.log(userToken);
-    var broadcasterToken = createBroadcasterToken(user.data[0], token);
-    console.log(broadcasterToken);*/
-    //console.log(await broadcasterGet("36419555"));
     var token = checkToken(event["authorisation"]);
     var API = new _API(token.twitch_auth_token);
     var broadcaster = (await broadcasterGet(token.target)).Item;
@@ -477,5 +460,3 @@ async function main(event) {
     broadcaster.twitch_auth_token = {S: JSON.stringify(await API.refreshToken())};
     console.log(await broadcasterUpdate(broadcaster));
 }
-
-//main();
